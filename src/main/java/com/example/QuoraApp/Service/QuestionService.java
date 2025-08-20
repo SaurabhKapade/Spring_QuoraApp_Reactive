@@ -3,7 +3,9 @@ package com.example.QuoraApp.Service;
 import com.example.QuoraApp.Adapters.QuestionAdapter;
 import com.example.QuoraApp.DTO.QuestionRequestDTO;
 import com.example.QuoraApp.DTO.QuestionResponseDTO;
+import com.example.QuoraApp.Events.ViewCountEvent;
 import com.example.QuoraApp.Models.Question;
+import com.example.QuoraApp.Producers.KafkaEventProducer;
 import com.example.QuoraApp.Repositories.QuestionRepository;
 import com.example.QuoraApp.Utils.CursorUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 public class QuestionService implements IQuestionService{
 
     private final QuestionRepository questionRepository;
+    private final KafkaEventProducer kafkaEventProducer;
     @Override
     public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
         Question question = Question.builder()
@@ -39,8 +42,11 @@ public class QuestionService implements IQuestionService{
     public Mono<QuestionResponseDTO> getQuestionById(String id) {
         return questionRepository.findById(id)
                 .map(QuestionAdapter::toQuestionResponseDTO)
-                .doOnSuccess(response->System.out.println("Question fetched successfully "+response))
-                .doOnError(response->System.out.println("Error while fetching question "+response));
+                .doOnError(response->System.out.println("Error while fetching question "+response))
+                .doOnSuccess(response->{
+                    ViewCountEvent viewCountEvent = new ViewCountEvent(id,"question",LocalDateTime.now());
+                    kafkaEventProducer.publishViewCountEvent(viewCountEvent);
+                });
     }
 
     @Override
