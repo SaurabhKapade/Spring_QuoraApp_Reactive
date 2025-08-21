@@ -5,7 +5,9 @@ import com.example.QuoraApp.DTO.QuestionRequestDTO;
 import com.example.QuoraApp.DTO.QuestionResponseDTO;
 import com.example.QuoraApp.Events.ViewCountEvent;
 import com.example.QuoraApp.Models.Question;
+import com.example.QuoraApp.Models.QuestionElasticDocument;
 import com.example.QuoraApp.Producers.KafkaEventProducer;
+import com.example.QuoraApp.Repositories.QuestionDocumentRepository;
 import com.example.QuoraApp.Repositories.QuestionRepository;
 import com.example.QuoraApp.Utils.CursorUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class QuestionService implements IQuestionService{
     private final QuestionRepository questionRepository;
     private final KafkaEventProducer kafkaEventProducer;
     private final IQuestionIndexService questionIndexService;
+    private final QuestionDocumentRepository questionDocumentRepository
     @Override
     public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
         Question question = Question.builder()
@@ -86,5 +90,10 @@ public class QuestionService implements IQuestionService{
                 .map(QuestionAdapter::toQuestionResponseDTO)
                 .doOnError(error -> System.out.println("Error searching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions searched successfully"));
+    }
+
+    @Override
+    public List<QuestionElasticDocument> searchQuestion(String query) {
+        return questionDocumentRepository.findByTitleContainingOrContentContaining(query,query);
     }
 }

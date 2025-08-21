@@ -23,8 +23,5 @@ public class QuestionIndexService implements IQuestionIndexService{
         questionDocumentRepository.save(document);
     }
 
-    @Override
-    public List<QuestionElasticDocument> searchQuestion(String query) {
-        return questionDocumentRepository.findByTitleContainingOrContentContaining(query,query);
-    }
+
 }

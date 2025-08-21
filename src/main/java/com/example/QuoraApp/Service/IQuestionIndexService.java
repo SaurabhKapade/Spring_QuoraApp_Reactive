@@ -7,6 +7,4 @@ import java.util.List;
 
 public interface IQuestionIndexService {
     void createQuestionIndex(Question question);
-
-    List<QuestionElasticDocument> searchQuestion(String query);
 }

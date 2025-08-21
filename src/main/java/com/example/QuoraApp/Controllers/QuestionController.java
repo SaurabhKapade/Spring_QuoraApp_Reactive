@@ -64,6 +64,6 @@ public class QuestionController {
     @GetMapping("/elasticsearch")
     public List<QuestionElasticDocument>searchQuestion(@RequestParam String query){
         System.out.print("searching" + query);
-        return questionIndexService.searchQuestion(query);
+        return questionService.searchQuestion(query);
     }
 }
