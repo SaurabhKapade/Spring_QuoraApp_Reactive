@@ -7,3 +7,5 @@ spring:
       port:27017
       database:Quora_db
       auto-index-creation:true
+  elasticsearch:
+    uris: http://localhost:9200

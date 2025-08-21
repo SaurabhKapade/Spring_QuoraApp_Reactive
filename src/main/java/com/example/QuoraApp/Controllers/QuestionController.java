@@ -3,11 +3,16 @@ package com.example.QuoraApp.Controllers;
 import com.example.QuoraApp.DTO.QuestionRequestDTO;
 import com.example.QuoraApp.DTO.QuestionResponseDTO;
 import com.example.QuoraApp.Models.Question;
+import com.example.QuoraApp.Models.QuestionElasticDocument;
+import com.example.QuoraApp.Service.IQuestionIndexService;
 import com.example.QuoraApp.Service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/questions")
@@ -15,6 +20,7 @@ import reactor.core.publisher.Mono;
 public class QuestionController {
 
     private final QuestionService questionService;
+    private final IQuestionIndexService questionIndexService;
     @PostMapping
     public Mono<QuestionResponseDTO> createQuestion(@ModelAttribute QuestionRequestDTO questionRequestDTO){
         return questionService.createQuestion(questionRequestDTO)
@@ -53,5 +59,11 @@ public class QuestionController {
             @RequestParam(defaultValue = "2") int size
     ){
         return questionService.searchQuestion(query,page,size);
+    }
+
+    @GetMapping("/elasticsearch")
+    public List<QuestionElasticDocument>searchQuestion(@RequestParam String query){
+        System.out.print("searching" + query);
+        return questionIndexService.searchQuestion(query);
     }
 }
