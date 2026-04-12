@@ -1,11 +1,17 @@
 spring:
   application:
-    name:QuoraApp
+    name: QuoraApp
+
   data:
     mongodb:
-      host:127.0.0.1
-      port:27017
-      database:Quora_db
-      auto-index-creation:true
-  elasticsearch:
-    uris: http://localhost:9200
+      host: 127.0.0.1
+      port: 27017
+      database: Quora_db
+      auto-index-creation: true
+
+    elasticsearch:
+      uris: http://localhost:9200
+      repositories:
+        enabled: true
+      reactive:
+        use-point-in-time: false

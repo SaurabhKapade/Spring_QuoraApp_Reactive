@@ -18,4 +18,6 @@ public interface QuestionRepository extends ReactiveMongoRepository<Question,Str
     Flux<Question> findByCreatedAtGreaterThanOrderByCreatedAtAsc(LocalDateTime cursor,Pageable pageable);
 
     Flux<Question> findTop10ByOrderByCreatedAtAsc();
+
+    Mono<Void>deleteById(String id);
 }

@@ -1,5 +1,6 @@
 package com.example.QuoraApp.Controllers;
 
+import com.example.QuoraApp.DTO.CreateQuestionDTO;
 import com.example.QuoraApp.DTO.QuestionRequestDTO;
 import com.example.QuoraApp.DTO.QuestionResponseDTO;
 import com.example.QuoraApp.Models.Question;
@@ -21,8 +22,10 @@ public class QuestionController {
 
     private final QuestionService questionService;
     private final IQuestionIndexService questionIndexService;
+
     @PostMapping
-    public Mono<QuestionResponseDTO> createQuestion(@ModelAttribute QuestionRequestDTO questionRequestDTO){
+    public Mono<CreateQuestionDTO> createQuestion(@ModelAttribute QuestionRequestDTO questionRequestDTO){
+        System.out.println(questionRequestDTO.getContent());
         return questionService.createQuestion(questionRequestDTO)
                 .doOnSuccess(response-> System.out.println("question created successfully "+response))
                 .doOnError(response->System.out.println("Error while creating Question "+response));
@@ -40,7 +43,6 @@ public class QuestionController {
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10") int size
     ){
-
         return questionService.getAllQuestions(cursor,size)
                 .doOnError(error -> System.out.println("Error fetching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions fetched successfully"));

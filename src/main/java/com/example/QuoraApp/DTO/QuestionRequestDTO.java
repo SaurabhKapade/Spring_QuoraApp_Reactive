@@ -23,5 +23,4 @@ public class QuestionRequestDTO {
     @Size(min=10,max=1000,message = "Content must be between 10 to 1000 characters")
     private String content;
 
-    private List<String> tags;
 }

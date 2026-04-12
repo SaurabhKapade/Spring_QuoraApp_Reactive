@@ -1,6 +1,6 @@
 package com.example.QuoraApp.Service;
-
 import com.example.QuoraApp.Adapters.QuestionAdapter;
+import com.example.QuoraApp.DTO.CreateQuestionDTO;
 import com.example.QuoraApp.DTO.QuestionRequestDTO;
 import com.example.QuoraApp.DTO.QuestionResponseDTO;
 import com.example.QuoraApp.Events.ViewCountEvent;
@@ -27,9 +27,9 @@ public class QuestionService implements IQuestionService{
     private final QuestionRepository questionRepository;
     private final KafkaEventProducer kafkaEventProducer;
     private final IQuestionIndexService questionIndexService;
-    private final QuestionDocumentRepository questionDocumentRepository
+    private final QuestionDocumentRepository questionDocumentRepository;
     @Override
-    public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
+    public Mono<CreateQuestionDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
         Question question = Question.builder()
                 .title(questionRequestDTO.getTitle())
                 .content(questionRequestDTO.getContent())
@@ -40,7 +40,7 @@ public class QuestionService implements IQuestionService{
         return questionRepository.save(question)
                 .map(savedQuestion->{
                     questionIndexService.createQuestionIndex(savedQuestion); // dump our question in elastic search data
-                    return QuestionAdapter.toQuestionResponseDTO(savedQuestion);
+                    return QuestionAdapter.toCreateQuestionDTO(savedQuestion);
                 })
                 .doOnSuccess(response->System.out.println("Question created successfulluy "+response))
                 .doOnError(response-> System.out.println("Error while creating Question " +response));
