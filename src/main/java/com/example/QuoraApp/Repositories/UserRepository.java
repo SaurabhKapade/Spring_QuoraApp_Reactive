@@ -13,6 +13,8 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends ReactiveMongoRepository<User,String> {
     Mono<Boolean> existsByUserName(String userName);
     Mono<Boolean> existsByEmail(String email);
+    Mono<User> findByEmail(String email);
+
     @Query("{ '_id': ?0 }")
     @Update("{ '$inc': { 'followersCount': 1 } }")
     Mono<Void> incrementFollowers(String userId);

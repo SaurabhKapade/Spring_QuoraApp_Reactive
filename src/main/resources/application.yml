@@ -15,3 +15,13 @@ spring:
         enabled: true
       reactive:
         use-point-in-time: false
+
+    redis:
+      repositories:
+        enabled: false
+
+jwt:
+  secret: QuoraBackendFeedGenerationApplicationSecretKey
+  expiration: 86400000
+
+

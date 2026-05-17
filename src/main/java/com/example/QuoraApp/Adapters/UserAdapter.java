@@ -9,6 +9,7 @@ public class UserAdapter {
                 .id(user.getId())
                 .userName(user.getUserName())
                 .email(user.getEmail())
+                .password(user.getPassword())
                 .followingsCount(user.getFollowingsCount())
                 .followersCount(user.getFollowersCount())
                 .createdAt(user.getCreatedAt())

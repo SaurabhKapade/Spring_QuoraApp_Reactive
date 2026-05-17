@@ -33,6 +33,8 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public Mono<QuestionResponseDTO> getQuestionById(@PathVariable String id){
+
+        System.out.println("req received with id "+ id);
         return questionService.getQuestionById(id)
                 .doOnSuccess(response->System.out.println("Question fetched successfully  "+response))
                 .doOnError(response->System.out.println("Error while fething question "+response));
@@ -41,8 +43,9 @@ public class QuestionController {
     @GetMapping
     public Flux<QuestionResponseDTO> getAllQuestions(
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "100") int size
     ){
+        System.out.println("Request received for getALlQuestions");
         return questionService.getAllQuestions(cursor,size)
                 .doOnError(error -> System.out.println("Error fetching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions fetched successfully"));
@@ -64,7 +67,7 @@ public class QuestionController {
     }
 
     @GetMapping("/elasticsearch")
-    public List<QuestionElasticDocument>searchQuestion(@RequestParam String query){
+    public Flux<QuestionElasticDocument> searchQuestion(@RequestParam String query){
         System.out.print("searching" + query);
         return questionService.searchQuestion(query);
     }

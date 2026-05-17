@@ -1,5 +1,4 @@
 package com.example.QuoraApp.DTO;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserRequestDTO {
-    private String userName;
-    private String email;
-    private String password;
+public class LoginRequestDTO {
+    public String email;
+    public String password;
 }

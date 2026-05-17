@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,5 +20,8 @@ public class QuestionRequestDTO {
     @NotBlank(message="Content is Required")
     @Size(min=10,max=1000,message = "Content must be between 10 to 1000 characters")
     private String content;
+
+    @NotBlank(message = "User ID is required")
+    private String userId;
 
 }

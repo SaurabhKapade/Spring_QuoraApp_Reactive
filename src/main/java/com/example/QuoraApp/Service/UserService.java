@@ -7,8 +7,13 @@ import com.example.QuoraApp.DTO.UserResponseDTO;
 import com.example.QuoraApp.Models.Follow;
 import com.example.QuoraApp.Models.User;
 import com.example.QuoraApp.Repositories.FollowRepository;
+import com.example.QuoraApp.Repositories.QuestionRepository;
 import com.example.QuoraApp.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,10 +22,12 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements IUserService{
+public class UserService  implements ReactiveUserDetailsService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
-    @Override
+    private final QuestionRepository questionRepository;
+    private final PasswordEncoder passwordEncoder;
+
     public Mono<UserResponseDTO> registerUser(UserRequestDTO userRequestDTO) {
         return userRepository.existsByUserName(userRequestDTO.getUserName())
                 .flatMap(exists ->{
@@ -37,6 +44,7 @@ public class UserService implements IUserService{
                     User user = User.builder()
                             .userName(userRequestDTO.getUserName())
                             .email(userRequestDTO.getEmail())
+                            .password(passwordEncoder.encode(userRequestDTO.getPassword()))
                             .followersCount(0)
                             .followingsCount(0)
                             .bio("You can chang this")
@@ -49,21 +57,29 @@ public class UserService implements IUserService{
                 .doOnSuccess(msg->System.out.println("user Registered successfully"))
                 .doOnError(msg->System.out.println("Cant register user"));
     }
-    @Override
+
     public Mono<UserResponseDTO> getUserById(String id){
         return userRepository.findById(id)
                 .map(UserAdapter::toUserResponseDTO)
+                .flatMap(userDto ->
+                        questionRepository.findByUserIdOrderByCreatedAtDesc(id)
+                                .map(com.example.QuoraApp.Adapters.QuestionAdapter::toQuestionResponseDTO)
+                                .collectList()
+                                .map(questions -> {
+                                    userDto.setQuestions(questions);
+                                    return userDto;
+                                })
+                )
                 .doOnError(error-> System.out.println("cant find User"));
     }
 
-    @Override
+
     public Flux<UserResponseDTO> getAllUsers() {
         return userRepository.findAll()
                 .map(UserAdapter::toUserResponseDTO)
                 .doOnError(error->System.out.println("error while getting users"));
     }
 
-    @Override
     public Mono<Void> follow(FollowRequestDTO req) {
 
         if (req.getFollowerId().equals(req.getFolloweeId())) {
@@ -91,7 +107,7 @@ public class UserService implements IUserService{
                 .then();
     }
 
-    @Override
+
     public Flux<UserResponseDTO> getFollowersByUserId(String userId) {
         return followRepository.findByFolloweeId(userId)
                 .flatMap(follow->userRepository.findById(follow.getFollowerId()))
@@ -99,7 +115,7 @@ public class UserService implements IUserService{
                 .doOnError(error-> System.out.println("error while fetching followers "+ error));
     }
 
-    @Override
+
     public Flux<UserResponseDTO> getFollowingsByUserId(String userId) {
         return followRepository.findByFollowerId(userId)
                 .flatMap(follow->userRepository.findById(follow.getFolloweeId()))
@@ -107,7 +123,7 @@ public class UserService implements IUserService{
                 .doOnError(error->System.out.println("error while fetching follwings" + error));
     }
 
-    @Override
+
     public Mono<Void> unFollow(FollowRequestDTO req) {
         String follower = req.getFollowerId();
         String followee = req.getFolloweeId();
@@ -139,4 +155,16 @@ public class UserService implements IUserService{
                 .then();
     }
 
+
+    @Override
+    public Mono<UserDetails> findByUsername(String email)  {
+        return userRepository.findByEmail(email)
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("user not found")))
+                .map(user-> org.springframework.security.core.userdetails.User.builder()
+                        .username(user.getEmail())
+                        .password(user.getPassword())
+                        .authorities("USER")
+                        .build()
+                );
+    }
 }

@@ -17,6 +17,10 @@ public class AnswerResponseDTO {
 
     private String questionId;
 
+    private String userId;
+
+    private UserResponseDTO user;
+
     private String createdAt;
 
     private String updatedAt;

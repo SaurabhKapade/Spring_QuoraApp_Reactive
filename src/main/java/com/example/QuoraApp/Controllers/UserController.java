@@ -1,28 +1,65 @@
 package com.example.QuoraApp.Controllers;
 
+import com.example.QuoraApp.Config.Security.JwtUtil;
 import com.example.QuoraApp.DTO.FollowRequestDTO;
+import com.example.QuoraApp.DTO.LoginRequestDTO;
 import com.example.QuoraApp.DTO.UserRequestDTO;
 import com.example.QuoraApp.DTO.UserResponseDTO;
 import com.example.QuoraApp.Models.User;
-import com.example.QuoraApp.Service.IUserService;
 import com.example.QuoraApp.Service.QuestionService;
 import com.example.QuoraApp.Service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
-    private final IUserService userService;
+    private final  UserService userService;
+    private final ReactiveAuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
-    @PostMapping
+    @PostMapping("/register")
     public Mono<UserResponseDTO> registerUser(@ModelAttribute UserRequestDTO userRequestDTO){
         System.out.println("Yayyyyy req aa gayi");
         return userService.registerUser(userRequestDTO);
+    }
+
+    @PostMapping("/login")
+    public Mono<?> loginUser(@ModelAttribute LoginRequestDTO loginRequestDTO){
+        Authentication authToken = new UsernamePasswordAuthenticationToken(
+                loginRequestDTO.getEmail(),
+                loginRequestDTO.getPassword()
+        );
+        return authenticationManager.authenticate(authToken)
+                .map(authentication -> {
+                    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                    String token = jwtUtil.generateToken(userDetails.getUsername());
+
+                    ResponseCookie cookie = ResponseCookie.from("authToken",token)
+                            .httpOnly(true)
+                            .secure(false)
+                            .path("/")
+                            .maxAge(Duration.ofDays(2))
+                            .build();
+
+                    System.out.println("cookie is "+ cookie.toString());
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                            .body(token);
+                });
     }
 
     @GetMapping("/ping")

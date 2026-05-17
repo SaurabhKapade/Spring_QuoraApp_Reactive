@@ -18,4 +18,7 @@ public class AnswerRequestDTO {
 
     @NotBlank(message = "Question ID is required")
     private String questionId;
+
+    @NotBlank(message = "User ID is required")
+    private String userId;
 }
